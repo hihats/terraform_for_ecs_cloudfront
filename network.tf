@@ -214,11 +214,11 @@ resource "aws_lb" "web_api" {
     Terraform = "true",
   }
 
-  # access_logs {
-  #   bucket  = aws_s3_bucket.mersell-log.bucket
-  #   prefix  = ""
-  #   enabled = true
-  # }
+  access_logs {
+    bucket  = aws_s3_bucket.log_bucket.bucket
+    prefix  = ""
+    enabled = true
+  }
 
   timeouts {}
 }
