@@ -1,0 +1,40 @@
+[
+  {
+    "name": "mersell-db-migrate-task",
+    "image": "468071515200.dkr.ecr.ap-northeast-1.amazonaws.com/mersell-${env}-rails:latest",
+    "memory": 512,
+    "essential": true,
+    "command": ["bundle", "exec", "rails", "db:${command}"],
+    "environment": [
+      {
+        "name": "PG_DATABASE",
+        "value": "${database_name}"
+      },
+      {
+        "name": "PG_HOST",
+        "value": "${rds_instance_endpoint}"
+      },
+      {
+        "name": "PG_PASSWORD",
+        "value": "${database_password}"
+      },
+      {
+        "name": "PG_USER",
+        "value": "postgres"
+      },
+      {
+        "name": "RAILS_ENV",
+        "value": "${env}"
+      }
+    ],
+    "LogConfiguration": {
+      "LogDriver": "awslogs",
+      "Options": {
+        "awslogs-region": "${region}",
+        "awslogs-group": "${log_group}",
+        "awslogs-stream-prefix": "ecs-task",
+        "awslogs-create-group": "true"
+      }
+    }
+  }
+]
