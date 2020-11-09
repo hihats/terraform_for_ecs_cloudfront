@@ -14,18 +14,20 @@ locals {
 data "aws_region" "current" {}
 data "aws_caller_identity" "self" { }
 
+########
+# VPC
 resource "aws_vpc" "base" {
   cidr_block = "10.0.0.0/16"
 }
 
-resource "aws_subnet" "public-a" {
+resource "aws_subnet" "public_a" {
   vpc_id = aws_vpc.base.id
   cidr_block = "10.0.0.0/24"
   availability_zone = "ap-northeast-1a"
   tags = { name = "${var.service_name}-${terraform.workspace}-ecs-private-subnet-a" }
 }
 
-resource "aws_subnet" "public-c" {
+resource "aws_subnet" "public_c" {
   vpc_id = aws_vpc.base.id
   cidr_block = "10.0.1.0/24"
   availability_zone = "ap-northeast-1c"
@@ -58,46 +60,95 @@ resource "aws_subnet" "rds_private_c" {
   tags = { name = "${var.service_name}-${terraform.workspace}-rds-private-subnet-c" }
 }
 
-resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.nat.id
-  subnet_id = aws_subnet.public-a.id
+resource "aws_eip" "public_a" {}
+resource "aws_eip" "public_c" {}
+
+resource "aws_nat_gateway" "public_a" {
+  allocation_id = aws_eip.public_a.id
+  subnet_id = aws_subnet.public_a.id
+}
+
+resource "aws_nat_gateway" "public_c" {
+  allocation_id = aws_eip.public_c.id
+  subnet_id = aws_subnet.public_c.id
 }
 
 resource "aws_egress_only_internet_gateway" "egress" {
   vpc_id = aws_vpc.base.id
+  tags = {
+    Name      = "${var.service_name}-${terraform.workspace}-egress"
+    Terraform = "true"
+  }
 }
 
-resource "aws_route_table" "public" {
+resource "aws_route_table" "public_a" {
   vpc_id = aws_vpc.base.id
-  tags = { Terraform = "true" }
+  tags = {
+    Name      = "${var.service_name}-${terraform.workspace}-public-a"
+    Terraform = "true"
+  }
 }
 
-resource "aws_route" "r" {
-  route_table_id              = aws_route_table.public.id
+resource "aws_route_table" "public_c" {
+  vpc_id = aws_vpc.base.id
+  tags = {
+    Name      = "${var.service_name}-${terraform.workspace}-public-c"
+    Terraform = "true"
+  }
+}
+
+resource "aws_route_table" "ecs_a" {
+  vpc_id = aws_vpc.base.id
+  tags = {
+    Name      = "${var.service_name}-${terraform.workspace}-ecs-a"
+    Terraform = "true"
+  }
+}
+
+resource "aws_route_table" "ecs_c" {
+  vpc_id = aws_vpc.base.id
+  tags = {
+    Name      = "${var.service_name}-${terraform.workspace}-ecs-c"
+    Terraform = "true"
+  }
+}
+
+resource "aws_route_table_association" "ecs_a" {
+  subnet_id      = aws_subnet.ecs_private_a.id
+  route_table_id = aws_route_table.ecs_a.id
+}
+
+resource "aws_route_table_association" "ecs_c" {
+  subnet_id      = aws_subnet.ecs_private_c.id
+  route_table_id = aws_route_table.ecs_c.id
+}
+
+resource "aws_route" "public_a_igw" {
+  route_table_id              = aws_route_table.public_a.id
   destination_ipv6_cidr_block = "::/0"
   egress_only_gateway_id      = aws_egress_only_internet_gateway.egress.id
 }
-resource "aws_route_table" "ecs" {
-  vpc_id = aws_vpc.base.id
-  tags = { Terraform = "true" }
+
+resource "aws_route" "public_c_igw" {
+  route_table_id              = aws_route_table.public_c.id
+  destination_ipv6_cidr_block = "::/0"
+  egress_only_gateway_id      = aws_egress_only_internet_gateway.egress.id
 }
 
-resource "aws_route_table_association" "ecs-a" {
-  subnet_id      = aws_subnet.ecs_private_a.id
-  route_table_id = aws_route_table.ecs.id
-}
-
-resource "aws_route_table_association" "ecs-c" {
-  subnet_id      = aws_subnet.ecs_private_c.id
-  route_table_id = aws_route_table.ecs.id
-}
-
-resource "aws_route" "ecs" {
-  route_table_id              = aws_route_table.ecs.id
+resource "aws_route" "ecs_a" {
+  route_table_id              = aws_route_table.ecs_a.id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id      = aws_nat_gateway.main.id
+  nat_gateway_id      = aws_nat_gateway.public_a.id
 }
 
+resource "aws_route" "ecs_c" {
+  route_table_id              = aws_route_table.ecs_c.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id      = aws_nat_gateway.public_c.id
+}
+
+##########
+# Route53
 resource "aws_route53_zone" "primary" {
   name = var.domain_name
 }
@@ -207,8 +258,8 @@ resource "aws_lb" "web_api" {
     aws_security_group.alb.id
   ]
   subnets = [
-    aws_subnet.public-a.id,
-    aws_subnet.public-c.id,
+    aws_subnet.public_a.id,
+    aws_subnet.public_c.id,
   ]
   tags = {
     Terraform = "true",
