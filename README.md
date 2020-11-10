@@ -43,4 +43,6 @@ $ terraform apply
 ```
 
 ### Dependencies of stacks
-各 .tfファイルがどのような依存関係にあるか
+How each .tf files depends on others
+ 各 .tfファイルがどのような依存関係にあるか
+![terraform_dependencies](https://user-images.githubusercontent.com/2120249/98707614-92989480-23c3-11eb-9ef0-89b90c20fefe.jpg)
