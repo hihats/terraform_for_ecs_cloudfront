@@ -65,7 +65,8 @@ resource "aws_rds_cluster_instance" "app" {
 
   engine             = aws_rds_cluster.app.engine
   engine_version     = aws_rds_cluster.app.engine_version
-  availability_zone  = "ap-northeast-1a"
+  # Don't specify in case of Multi AZ
+  # availability_zone  = "ap-northeast-1a"
 
   db_parameter_group_name = aws_db_parameter_group.aurora_postgres.name
 
