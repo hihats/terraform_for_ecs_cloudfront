@@ -63,14 +63,6 @@ data "aws_iam_policy_document" "static_file_host" {
       identifiers = ["arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_identity.static_file_host.id}"]
     }
   }
-}
-
-resource "aws_s3_bucket_policy" "allow_for_github_action_iam" {
-  bucket = aws_s3_bucket.static_file_host.id
-  policy = data.aws_iam_policy_document.allow_for_github_action_iam.json
-}
-
-data "aws_iam_policy_document" "allow_for_github_action_iam" {
   statement {
     effect = "Allow"
     actions = [
