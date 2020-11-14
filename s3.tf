@@ -31,9 +31,10 @@ resource "aws_s3_bucket" "log_bucket" {
 data "aws_iam_policy_document" "log_bucket" {
   statement {
     effect = "Allow"
+    # https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/classic/enable-access-logs.html
     principals {
       type = "AWS"
-      identifiers = ["arn:aws:iam::468071515200:root"]
+      identifiers = ["arn:aws:iam::582318560864:root"]
     }
     actions = [
       "s3:PutObject"
