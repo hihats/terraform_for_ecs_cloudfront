@@ -34,3 +34,9 @@ variable "ipset_name" {}
 variable "custom_header_value_via_cloudfront" {}
 
 variable "developers" {}
+
+variable "desired_container_count" {
+  default = "2"
+}
+
+variable "github_action_iam_user" {}

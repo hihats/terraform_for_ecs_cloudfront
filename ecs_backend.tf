@@ -105,6 +105,7 @@ data "template_file" "run-app-task_definition" {
     database_password = random_string.rds_postgres_password.result
     rds_instance_endpoint = local.rds_cluster_writer_instance_endpoint[0]
     rails_master_key = aws_ssm_parameter.rails_master_key.arn
+    container_port = var.container_port
     env = terraform.workspace
   }
 }

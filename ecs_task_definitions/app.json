@@ -35,7 +35,7 @@
     ],
     "PortMappings": [
       {
-        "containerPort": 3000,
+        "containerPort": "{container_port}",
         "hostPort": 0,
         "protocol": "tcp"
       }
