@@ -27,6 +27,12 @@
         "value": "${env}"
       }
     ],
+    "secrets": [
+      {
+        "name": "RAILS_MASTER_KEY",
+        "valueFrom": "${rails_master_key}"
+      }
+    ],
     "PortMappings": [
       {
         "containerPort": 3000,

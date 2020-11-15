@@ -104,6 +104,7 @@ data "template_file" "run-app-task_definition" {
     database_name = var.service_name
     database_password = random_string.rds_postgres_password.result
     rds_instance_endpoint = local.rds_cluster_writer_instance_endpoint[0]
+    rails_master_key = aws_ssm_parameter.rails_master_key.arn
     env = terraform.workspace
   }
 }
@@ -131,6 +132,7 @@ data "template_file" "db_create_task_definition" {
     database_password = random_string.rds_postgres_password.result
     rds_instance_endpoint = local.rds_cluster_writer_instance_endpoint[0]
     command = "create"
+    rails_master_key = aws_ssm_parameter.rails_master_key.arn
     env = terraform.workspace
   }
 }
@@ -158,6 +160,7 @@ data "template_file" "db_migrate_task_definition" {
     database_password = random_string.rds_postgres_password.result
     rds_instance_endpoint = local.rds_cluster_writer_instance_endpoint[0]
     command = "migrate"
+    rails_master_key = aws_ssm_parameter.rails_master_key.arn
     env = terraform.workspace
   }
 }
@@ -185,6 +188,7 @@ data "template_file" "db_seed_task_definition" {
     database_password = random_string.rds_postgres_password.result
     rds_instance_endpoint = local.rds_cluster_writer_instance_endpoint[0]
     command = "seed_fu"
+    rails_master_key = aws_ssm_parameter.rails_master_key.arn
     env = terraform.workspace
   }
 }
