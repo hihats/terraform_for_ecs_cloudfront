@@ -54,7 +54,6 @@ resource "aws_ecs_service" "app" {
   name            = "${var.service_name}-${terraform.workspace}-service"
   task_definition = aws_ecs_task_definition.app.arn
   cluster         = aws_ecs_cluster.app.arn
-  desired_count   = 1
 
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.app.name
@@ -67,13 +66,14 @@ resource "aws_ecs_service" "app" {
     container_name   = "${var.service_name}-api-task"
     container_port   = var.container_port
   }
-  # network_configuration {
-  #   subnets = [
-  #     data.aws_subnet.public-a.id,
-  #     data.aws_subnet.public-c.id,
-  #   ]
-  #   security_groups = [aws_security_group.ecs-service.id]
-  # }
+
+  desired_count                      = var.desired_container_count
+  deployment_maximum_percent         = (var.desired_container_count + 1) / var.desired_container_count * 100
+  deployment_minimum_healthy_percent = 100 / var.desired_container_count
+  ordered_placement_strategy {
+    type  = "binpack"
+    field = "memory"
+  }
 
   lifecycle {
     ignore_changes = [
