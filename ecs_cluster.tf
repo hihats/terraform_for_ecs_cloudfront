@@ -99,7 +99,8 @@ resource "aws_autoscaling_group" "app" {
   min_size                  = 1
   health_check_grace_period = 300
   health_check_type         = "ELB"
-  target_group_arns         = [aws_lb_target_group.api.arn]
+  # Remove for dynamic port mapping
+  # target_group_arns         = [aws_lb_target_group.api.arn]
   desired_capacity          = local.autoscaling[terraform.workspace]["desired_capacity"]
   force_delete              = true
   placement_group           = aws_placement_group.web.id
