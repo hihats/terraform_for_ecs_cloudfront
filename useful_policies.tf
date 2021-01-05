@@ -36,7 +36,7 @@ data "aws_iam_policy_document" "sqs-send-message" {
 }
 
 resource "aws_iam_policy" "kms_key_decrypt" {
-  name       = "${var.service_name}-${terraform.workspace}-kms-key-decrypt-policy"
+  name       = "kms-key-decrypt-policy"
   policy     = data.aws_iam_policy_document.kms_key_decrypt.json
 }
 
