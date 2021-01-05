@@ -181,26 +181,11 @@ resource "aws_acm_certificate" "cloudfront" {
   }
 }
 
-# resource "aws_route53_record" "cert_validation" {
-#   zone_id = data.aws_route53_zone.buysell-technologies-tech.zone_id
-#   for_each = {
-#     for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.domain_name => {
-#       name   = dvo.resource_record_name
-#       record = dvo.resource_record_value
-#       type   = dvo.resource_record_type
-#     }
-#   }
-#   type       = each.value.type
-#   name       = each.value.name
-#   records    = [each.value.record]
-#   ttl        = 60
-# }
-#
-# resource "aws_acm_certificate_validation" "cert" {
-#   certificate_arn = aws_acm_certificate.cloudfront.arn
-#   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
-#   provider                  = "aws.virginia"
-# }
+resource "aws_acm_certificate_validation" "cloudfront" {
+  certificate_arn = aws_acm_certificate.cloudfront.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+  provider                  = "aws.virginia"
+}
 
 ################
 # ALB
@@ -312,6 +297,11 @@ resource "aws_route53_record" "alb_cert_validation" {
   ttl        = 60
 }
 
+resource "aws_acm_certificate_validation" "alb" {
+  certificate_arn = aws_acm_certificate.alb.arn
+  validation_record_fqdns = [for record in aws_route53_record.alb_cert_validation : record.fqdn]
+}
+
 resource "aws_lb_target_group" "api" {
   deregistration_delay = 30
   name                 = "${var.service_name}-${terraform.workspace}-alb-tg"
@@ -354,6 +344,7 @@ resource "aws_lb_listener" "api" {
     target_group_arn = aws_lb_target_group.api.arn
     type             = "forward"
   }
+  depends_on = [aws_acm_certificate_validation.alb]
 
   timeouts {}
 }
