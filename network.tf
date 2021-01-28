@@ -283,7 +283,7 @@ resource "aws_acm_certificate" "alb" {
 }
 
 resource "aws_route53_record" "alb_cert_validation" {
-  zone_id = data.aws_route53_zone.buysell-technologies-tech.zone_id
+  zone_id = data.aws_route53_zone.primary.zone_id
   for_each = {
     for dvo in aws_acm_certificate.alb.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
